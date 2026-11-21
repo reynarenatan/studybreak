@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<!--
+  StudyBreak — index.html
+  CS1102 group project (CityUHK)
+
+  This file holds ALL the screens of the website.
+  Each step of the session is one <section class="screen">.
+  Only one screen is visible at a time: the others have the "hidden"
+  attribute. app.js removes/adds "hidden" to switch screens.
+
+  The value="" of every radio button is the code stored in the
+  session object we agreed with logic.js (e.g. "library", "3days").
+  Do NOT change these values without telling the logic.js teammate.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Makes the page fit phone screens instead of showing a zoomed-out desktop page -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StudyBreak</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <h1>StudyBreak</h1>
+    <p class="tagline">Focus, then move.</p>
+  </header>
+
+  <main>
+
+    <!--
+      SUPPORT BOX (shared by several screens)
+      It sits above all the screens, so whenever it is visible it appears
+      at the top of the current screen.
+      app.js shows it:
+        - on the timer screens if the student chose 5 for overwhelm at the START
+        - on the results screen if getEndResults() says showSupportBox: true
+      role="note" tells screen readers this is important side information.
+    -->
+    <aside id="support-box" class="support-box" role="note" hidden>
+      <p>
+        If you would like support, contact CityUHK Counselling Service at
+        <a href="tel:34428478">3442 8478</a>. Outside office hours, call the
+        Caring Hotline at <a href="tel:51177807">5117 7807</a>. For an immediate
+        emergency, call <a href="tel:999">999</a> (off campus) or CityUHK
+        Security at <a href="tel:34428888">3442 8888</a> (on campus).
+      </p>
+    </aside>
+
+
+    <!-- ============ SCREEN 1: START ============ -->
+    <section id="screen-start" class="screen">
+      <!-- tabindex="-1" lets app.js move keyboard/screen-reader focus to the
+           heading when this screen appears, without adding it to the Tab order -->
+      <h2 tabindex="-1">Set up your study session</h2>
+
+      <!-- novalidate: we turn off the browser's own pop-up checks because
+           app.js shows our own friendly error message instead -->
+      <form id="start-form" novalidate>
+
+        <!-- A <fieldset> groups radio buttons; its <legend> is the question.
+             Screen readers read the legend before each option. -->
+        <fieldset>
+          <legend>Choose your focus time</legend>
+          <div class="options">
+            <label class="option"><input type="radio" name="focusMin" value="25"> 25 minutes</label>
+            <label class="option"><input type="radio" name="focusMin" value="45"> 45 minutes</label>
+            <label class="option"><input type="radio" name="focusMin" value="60"> 60 minutes</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Where are you studying?</legend>
+          <div class="options">
+            <label class="option"><input type="radio" name="place" value="library"> Library</label>
+            <label class="option"><input type="radio" name="place" value="dorm"> Dorm or home</label>
+            <label class="option"><input type="radio" name="place" value="other"> Other (e.g., classroom or café)</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>When is your next deadline?</legend>
+          <div class="options">
+            <label class="option"><input type="radio" name="deadline" value="today"> Today or tomorrow</label>
+            <label class="option"><input type="radio" name="deadline" value="3days"> Within 3 days</label>
+            <label class="option"><input type="radio" name="deadline" value="week"> Within a week</label>
+            <label class="option"><input type="radio" name="deadline" value="none"> Nothing soon</label>
+          </div>
+        </fieldset>
+
+        <!-- 1–5 scales use class "scale" so style.css can lay them out in a row -->
+        <fieldset>
+          <legend>How is your mood right now?</legend>
+          <div class="options scale">
+            <label class="option"><input type="radio" name="moodStart" value="1"> 1 Very low</label>
+            <label class="option"><input type="radio" name="moodStart" value="2"> 2</label>
+            <label class="option"><input type="radio" name="moodStart" value="3"> 3</label>
+            <label class="option"><input type="radio" name="moodStart" value="4"> 4</label>
+            <label class="option"><input type="radio" name="moodStart" value="5"> 5 Very good</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>How overwhelmed do you feel right now?</legend>
+          <div class="options scale">
+            <label class="option"><input type="radio" name="overwhelmStart" value="1"> 1 Not at all</label>
+            <label class="option"><input type="radio" name="overwhelmStart" value="2"> 2</label>
+            <label class="option"><input type="radio" name="overwhelmStart" value="3"> 3</label>
+            <label class="option"><input type="radio" name="overwhelmStart" value="4"> 4</label>
+            <label class="option"><input type="radio" name="overwhelmStart" value="5"> 5 Very much</label>
+          </div>
+        </fieldset>
+
+        <p class="pilot-reminder">At the end, please fill in the 2-minute feedback form.</p>
+
+        <!-- Error message area. role="alert" makes screen readers announce it
+             as soon as app.js puts text inside it. -->
+        <p id="start-error" class="error" role="alert"></p>
+
+        <button type="submit" class="btn btn-primary">Start</button>
+      </form>
+
+      <!-- Privacy note: exact wording from the content document -->
+      <section class="privacy-note" aria-labelledby="privacy-heading">
+        <h3 id="privacy-heading">Privacy</h3>
+        <p>
+          StudyBreak does not ask for your name, student ID, email address, or
+          written personal information. Your answers are used only during this
+          session and are not sent to a StudyBreak server or saved to an account.
+          They disappear when you close the page. If you choose to open the
+          separate Google feedback form, the session numbers in its pre-filled
+          link will be sent to Google when the form opens and submitted if you
+          complete the form. Participation in feedback is voluntary.
+        </p>
+      </section>
+    </section>
+
+
+    <!-- ============ SCREEN 2: FOCUS TIMER ============ -->
+    <section id="screen-focus" class="screen" hidden>
+      <!-- app.js changes this text, e.g. "Focus time" or, after "Not now",
+           "Break reminder in" -->
+      <h2 id="focus-label" tabindex="-1">Focus time</h2>
+
+      <!-- role="timer" tells assistive technology this is a countdown.
+           Screen readers do NOT read it out every second (that would be noisy). -->
+      <p id="focus-time" class="timer" role="timer">25:00</p>
+
+      <button type="button" class="btn btn-secondary end-session-btn">End session</button>
+    </section>
+
+
+    <!-- ============ SCREEN 3: BREAK PROMPT ============ -->
+    <section id="screen-prompt" class="screen" hidden>
+      <h2 tabindex="-1">Time for a moving break</h2>
+      <p class="neutral-line">You can take a short break when you are ready.</p>
+
+      <!-- app.js fills these two from getBreakSuggestion(place, deadline) -->
+      <div class="suggestion">
+        <p class="suggestion-length">Suggested break: <span id="prompt-minutes">5</span> minutes</p>
+        <p id="prompt-activity" class="suggestion-text"></p>
+      </div>
+
+      <div class="button-row">
+        <button type="button" id="btn-start-break" class="btn btn-primary">Start break</button>
+        <button type="button" id="btn-not-now" class="btn btn-secondary">Not now</button>
+      </div>
+
+      <button type="button" class="btn btn-secondary end-session-btn">End session</button>
+    </section>
+
+
+    <!-- ============ SCREEN 4: BREAK TIMER ============ -->
+    <section id="screen-break" class="screen" hidden>
+      <h2 tabindex="-1">Break time</h2>
+      <p id="break-time" class="timer" role="timer">5:00</p>
+      <!-- Repeats the suggested activity so the student remembers what to do -->
+      <p id="break-activity" class="suggestion-text"></p>
+
+      <button type="button" class="btn btn-secondary end-session-btn">End session</button>
+    </section>
+
+
+    <!-- ============ SCREEN 5: AFTER-BREAK QUESTIONS ============ -->
+    <section id="screen-after" class="screen" hidden>
+      <h2 tabindex="-1">Welcome back</h2>
+
+      <form id="after-form" novalidate>
+        <fieldset>
+          <legend>During your break, did you…</legend>
+          <div class="options">
+            <label class="option"><input type="radio" name="moved" value="walk"> Walk around</label>
+            <label class="option"><input type="radio" name="moved" value="stand"> Stand or stretch</label>
+            <label class="option"><input type="radio" name="moved" value="seated"> Stay seated</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>How focused do you feel now?</legend>
+          <div class="options scale">
+            <label class="option"><input type="radio" name="focus" value="1"> 1 Not at all focused</label>
+            <label class="option"><input type="radio" name="focus" value="2"> 2</label>
+            <label class="option"><input type="radio" name="focus" value="3"> 3</label>
+            <label class="option"><input type="radio" name="focus" value="4"> 4</label>
+            <label class="option"><input type="radio" name="focus" value="5"> 5 Very focused</label>
+          </div>
+        </fieldset>
+
+        <p id="after-error" class="error" role="alert"></p>
+
+        <!-- Submitting this form saves the answers and starts the next focus block -->
+        <button type="submit" class="btn btn-primary">Continue studying</button>
+      </form>
+    </section>
+
+
+    <!-- ============ SCREEN 6: END CHECK-IN ============ -->
+    <section id="screen-end" class="screen" hidden>
+      <h2 tabindex="-1">End of session check-in</h2>
+
+      <form id="end-form" novalidate>
+        <fieldset>
+          <legend>How is your mood right now?</legend>
+          <div class="options scale">
+            <label class="option"><input type="radio" name="moodEnd" value="1"> 1 Very low</label>
+            <label class="option"><input type="radio" name="moodEnd" value="2"> 2</label>
+            <label class="option"><input type="radio" name="moodEnd" value="3"> 3</label>
+            <label class="option"><input type="radio" name="moodEnd" value="4"> 4</label>
+            <label class="option"><input type="radio" name="moodEnd" value="5"> 5 Very good</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>How overwhelmed do you feel right now?</legend>
+          <div class="options scale">
+            <label class="option"><input type="radio" name="overwhelmEnd" value="1"> 1 Not at all</label>
+            <label class="option"><input type="radio" name="overwhelmEnd" value="2"> 2</label>
+            <label class="option"><input type="radio" name="overwhelmEnd" value="3"> 3</label>
+            <label class="option"><input type="radio" name="overwhelmEnd" value="4"> 4</label>
+            <label class="option"><input type="radio" name="overwhelmEnd" value="5"> 5 Very much</label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Did you sleep less than 6 hours last night?</legend>
+          <div class="options">
+            <!-- app.js turns "yes"/"no" into true/false for session.shortSleep -->
+            <label class="option"><input type="radio" name="shortSleep" value="yes"> Yes</label>
+            <label class="option"><input type="radio" name="shortSleep" value="no"> No</label>
+          </div>
+        </fieldset>
+
+        <p id="end-error" class="error" role="alert"></p>
+
+        <button type="submit" class="btn btn-primary">See my results</button>
+      </form>
+    </section>
+
+
+    <!-- ============ SCREEN 7: RESULTS ============ -->
+    <section id="screen-results" class="screen" hidden>
+      <h2 tabindex="-1">Your session results</h2>
+
+      <!-- (The support box above appears here when needed.) -->
+
+      <h3>Tips</h3>
+      <!-- app.js adds one <li> per tip from getEndResults(session).tips -->
+      <ul id="results-tips" class="tips-list"></ul>
+
+      <h3>CityUHK services</h3>
+      <!-- app.js adds one <li> per service (name, description, link) -->
+      <ul id="results-services" class="services-list"></ul>
+
+      <h3>Session summary</h3>
+      <!-- <pre> keeps the line breaks from buildSummary(session) -->
+      <pre id="summary-text" class="summary"></pre>
+
+      <div class="button-row">
+        <button type="button" id="btn-form" class="btn btn-primary">Open feedback form</button>
+        <button type="button" id="btn-copy" class="btn btn-secondary">Copy summary</button>
+      </div>
+      <!-- aria-live="polite": screen readers announce "Copied!" when it appears -->
+      <p id="copy-status" class="copy-status" aria-live="polite"></p>
+
+      <p class="disclaimer">This is a self-reflection tool, not medical advice.</p>
+    </section>
+
+  </main>
+
+  <!--
+    Scripts go at the END of <body> so all the HTML above exists
+    before the code runs.
+    logic.js MUST load before app.js, because app.js calls its functions.
+  -->
+  <script src="logic.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

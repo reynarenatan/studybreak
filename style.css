@@ -1,0 +1,381 @@
+/*
+  StudyBreak — style.css
+  CS1102 group project (CityUHK)
+
+  Design goals:
+  - Calm colours (soft green-grey background, muted teal buttons)
+  - Large, tap-friendly buttons and answer options (at least 48px tall)
+  - Readable font and good colour contrast
+  - "Mobile first": the basic styles are for phones; the @media rule
+    near the bottom adjusts the layout for wider screens.
+*/
+
+
+/* ---------- 1. Colour palette ----------
+   CSS variables (custom properties) store each colour once, so we can
+   change the whole theme by editing just these lines.
+   All text colours were chosen to have strong contrast on their background. */
+:root {
+  --bg: #f3f6f4;            /* page background: very soft grey-green */
+  --card: #ffffff;          /* background of the main content box */
+  --text: #1f2d2b;          /* main text: dark green-grey */
+  --muted: #4d5f5b;         /* secondary text (notes, tagline) */
+  --primary: #2f6f68;       /* main buttons: muted teal */
+  --primary-dark: #245751;  /* main button when hovered */
+  --primary-soft: #e3efec;  /* light teal: selected answer background */
+  --border: #c9d6d2;        /* borders of answer options */
+  --focus: #1c5d99;         /* keyboard focus outline: blue */
+  --error: #a3261d;         /* error message text: dark red */
+  --support-bg: #fff4e0;    /* support box background: soft amber */
+  --support-border: #c98a1b;
+}
+
+
+/* ---------- 2. Basic page setup ---------- */
+
+/* box-sizing: border-box means padding is counted INSIDE an element's
+   width, which makes sizes easier to predict */
+* {
+  box-sizing: border-box;
+}
+
+/* IMPORTANT: makes sure anything with the "hidden" attribute is really
+   hidden, even if another rule below gives it a display value.
+   app.js relies on this to show one screen at a time. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  /* System fonts: already on every device, so nothing to download */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.125rem;      /* 18px: a little larger than default for easy reading */
+  line-height: 1.5;
+}
+
+/* Header at the top of every page */
+.site-header {
+  text-align: center;
+  padding: 1.5rem 1rem 0.5rem;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: var(--primary);
+}
+
+.tagline {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+}
+
+/* The main content box: centred, with a maximum width so lines of
+   text don't get too long on big screens */
+main {
+  max-width: 40rem;
+  margin: 1rem auto 2rem;
+  padding: 0 1rem;
+}
+
+.screen {
+  background: var(--card);
+  border-radius: 1rem;
+  padding: 1.5rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+/* Headings get focus from app.js (for screen readers) when a screen
+   appears. They are not clickable, so we don't show an outline on them. */
+h2:focus {
+  outline: none;
+}
+
+
+/* ---------- 3. Questions and answer options ---------- */
+
+fieldset {
+  border: none;      /* remove the default box around each question */
+  margin: 0 0 1.5rem;
+  padding: 0;
+}
+
+legend {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  padding: 0;
+}
+
+/* Options are stacked in a column by default (good for phones) */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Each answer is a large box the student can tap anywhere on */
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;          /* 48px: recommended minimum tap size */
+  padding: 0.6rem 0.9rem;
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.option:hover {
+  border-color: var(--primary);
+}
+
+/* Make the radio circle itself bigger and teal */
+.option input[type="radio"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  flex-shrink: 0;            /* stop the circle from being squashed */
+  accent-color: var(--primary);
+}
+
+/* Highlight the chosen answer.
+   :has() means "an .option that contains a checked radio button".
+   (Older browsers ignore this rule; the radio circle still shows the choice.) */
+.option:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  font-weight: 600;
+}
+
+
+/* ---------- 4. Buttons ---------- */
+
+.btn {
+  display: block;
+  width: 100%;               /* full width on phones = easy to tap */
+  min-height: 3.25rem;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  font: inherit;             /* use the same font as the page */
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Main action (Start, Start break, Continue...) */
+.btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+  border: 2px solid var(--primary);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* Secondary action (Not now, End session, Copy summary) */
+.btn-secondary {
+  background: var(--card);
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-soft);
+}
+
+/* Two buttons side by side (on wider screens; see section 7) */
+.button-row {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Visible outline when moving around with the keyboard (Tab key).
+   :focus-visible only shows it for keyboard users, not on every tap. */
+.btn:focus-visible,
+.option:has(input:focus-visible),
+a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+
+/* ---------- 5. Timer screens ---------- */
+
+.timer {
+  font-size: 4.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 1rem 0;
+  color: var(--primary);
+  /* tabular-nums: every digit has the same width, so the timer
+     doesn't "jump" left and right as the numbers change */
+  font-variant-numeric: tabular-nums;
+}
+
+.neutral-line {
+  color: var(--muted);
+}
+
+/* The suggested activity on the break prompt */
+.suggestion {
+  background: var(--primary-soft);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.suggestion-length {
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+
+.suggestion-text {
+  margin: 0;
+}
+
+/* Extra space above "End session" so it isn't tapped by accident */
+.end-session-btn {
+  margin-top: 2rem;
+}
+
+
+/* ---------- 6. Messages, notes and results ---------- */
+
+/* Error message: empty (and takes no space) until app.js adds text */
+.error {
+  color: var(--error);
+  font-weight: 600;
+  margin: 0;
+}
+
+.error:not(:empty) {
+  margin-bottom: 0.5rem;
+}
+
+.pilot-reminder {
+  font-style: italic;
+  color: var(--muted);
+}
+
+.privacy-note {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.privacy-note h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+/* Support box: warm colour so it stands out, but not alarming red */
+.support-box {
+  background: var(--support-bg);
+  border: 2px solid var(--support-border);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.support-box p {
+  margin: 0;
+}
+
+.support-box a {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Lists of tips and services on the results screen */
+.tips-list,
+.services-list {
+  padding-left: 1.25rem;
+}
+
+.tips-list li,
+.services-list li {
+  margin-bottom: 0.75rem;
+}
+
+.services-list a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Session summary box */
+.summary {
+  background: var(--bg);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-family: inherit;      /* <pre> uses a code font by default; use the normal one */
+  font-size: 1rem;
+  white-space: pre-wrap;     /* keep line breaks, but wrap long lines on phones */
+  overflow-wrap: break-word;
+}
+
+.copy-status {
+  min-height: 1.5rem;        /* reserve space so the page doesn't jump when "Copied!" appears */
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.disclaimer {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+
+/* ---------- 7. Wider screens (tablets and laptops) ----------
+   These rules only apply when the screen is at least 600px wide. */
+@media (min-width: 600px) {
+
+  .screen {
+    padding: 2rem;
+  }
+
+  /* 1–5 scales become one row of five boxes */
+  .options.scale {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  /* In a row, put the radio circle above its label text */
+  .options.scale .option {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    gap: 0.35rem;
+    font-size: 1rem;
+  }
+
+  /* Pairs of buttons sit side by side */
+  .button-row {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .timer {
+    font-size: 6rem;
+  }
+}
