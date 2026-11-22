@@ -5,14 +5,12 @@
  * getBreakSuggestion(place, deadline)
  * getEndResults(session)
  * buildSummary(session)
- * buildFormLink(session)
  *
  * This file contains logic/data only. It does not create HTML.
  *
  * Changes made when combining with app.js (22 Nov):
  * - Removed a stray "x`" line in buildSummary() that stopped the file loading.
- * - Added PLACE_LABELS and DEADLINE_LABELS so the summary and the Google Form
- *   link use readable text ("Dorm or home") instead of codes ("dorm").
+ * - Added PLACE_LABELS and DEADLINE_LABELS so the summary uses readable text.
  */
 (function (root, factory) {
   const api = factory();
@@ -24,28 +22,7 @@
   const FORM_URL =
     "https://docs.google.com/forms/d/e/1FAIpQLSdm0D8-wD6F-SZpFpR8X9VCwD183cH7dLySZ5ZvOIS1okDEnQ/viewform";
 
-  // These IDs must be supplied by Content using Google's
-  // "Get pre-filled link" feature. Do not guess them.
-  const FORM_ENTRY_IDS = Object.freeze({
-    breaksPrompted: "",
-    breaksTaken: "",
-    movingBreaks: "",
-    averageFocusMoving: "",
-    averageFocusSeated: "",
-    moodBefore: "",
-    moodAfter: "",
-    overwhelmBefore: "",
-    overwhelmAfter: "",
-    focusLength: "",
-    location: "",
-    deadline: ""
-  });
-
-  // Readable text for each code. Used in the summary AND in the pre-filled
-  // Google Form link. For multiple-choice questions, Google Forms only
-  // pre-selects an answer when the link contains the option's EXACT text,
-  // so these must match the form's options letter for letter.
-  // (Form options from the content document, section 3, questions 18–19.)
+  // Readable text for each code, used in the session summary.
   const PLACE_LABELS = Object.freeze({
     library: "Library",
     dorm: "Dorm or home",
@@ -382,64 +359,15 @@
     ].join("\n");
   }
 
-  function formValues(session) {
-    const stats = getBreakStats(session);
-
-    return {
-      breaksPrompted: stats.breaksPrompted,
-      breaksTaken: stats.breaksTaken,
-      movingBreaks: stats.movingBreaks,
-      averageFocusMoving: displayAverage(stats.averageFocusMoving),
-      averageFocusSeated: displayAverage(stats.averageFocusSeated),
-      moodBefore: validateRating(session.moodStart, "moodStart"),
-      moodAfter: validateRating(session.moodEnd, "moodEnd"),
-      overwhelmBefore: validateRating(session.overwhelmStart, "overwhelmStart"),
-      overwhelmAfter: validateRating(session.overwhelmEnd, "overwhelmEnd"),
-      // Check this against the live form: if its options read "25 minutes"
-      // rather than "25", change this to: Number(session.focusMin) + " minutes"
-      focusLength: Number(session.focusMin),
-      // Exact option text, so Google Forms pre-selects the right answer
-      location: PLACE_LABELS[normalisePlace(session.place)],
-      deadline: DEADLINE_LABELS[normaliseDeadline(session.deadline)]
-    };
-  }
-
-  function buildFormLink(session, entryIds) {
-    const ids = entryIds || FORM_ENTRY_IDS;
-    const values = formValues(session);
-
-    const missing = Object.keys(values).filter(
-      key => !ids[key] || !/^entry\.\d+$/.test(ids[key])
-    );
-
-    if (missing.length) {
-      throw new Error(
-        "The Google Form is not configured for pre-filling yet. Ask Content for the entry IDs for: " +
-        missing.join(", ") +
-        ". Then add them to FORM_ENTRY_IDS in logic.js."
-      );
-    }
-
-    const url = new URL(FORM_URL);
-
-    for (const [key, value] of Object.entries(values)) {
-      url.searchParams.set(ids[key], String(value));
-    }
-
-    return url.toString();
-  }
-
   return Object.freeze({
     getBreakSuggestion,
     getEndResults,
     buildSummary,
-    buildFormLink,
     getBreakStats,
     isDeadlineClose,
     CITYU_SERVICES,
     SAFETY_BOX_TEXT,
     DISCLAIMER,
-    FORM_URL,
-    FORM_ENTRY_IDS
+    FORM_URL
   });
 });

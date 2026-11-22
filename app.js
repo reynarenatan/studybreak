@@ -11,7 +11,6 @@
     logic.getBreakSuggestion(place, deadline) -> { minutes, text }
     logic.getEndResults(session)              -> { tips, services, showSupportBox }
     logic.buildSummary(session)               -> string
-    logic.buildFormLink(session)              -> string (URL)
 
   How this file is organised:
     1. The session object (all the student's answers)
@@ -527,19 +526,8 @@ function showCopied() {
 }
 
 function handleOpenForm() {
-  let url;
-  try {
-    // The pre-filled link: the session numbers are already filled in
-    url = logic.buildFormLink(session);
-  } catch (error) {
-    // logic.js stops with an error if the Google Form entry IDs are not
-    // set up yet. Then we open the plain form (nothing pre-filled), so
-    // the button still works.
-    console.warn(error.message);
-    url = logic.FORM_URL;
-  }
-  // "_blank" = new tab; "noopener" stops the new tab from controlling this page
-  window.open(url, "_blank", "noopener");
+  // Opens the feedback form (testers fill it in themselves)
+  window.open(logic.FORM_URL, "_blank", "noopener");
 }
 
 
