@@ -210,7 +210,8 @@ document.addEventListener("visibilitychange", function () {
    5. GETTING THE STUDENT'S ATTENTION
    When a timer ends, the tab might be in the background, so we:
    - change the tab title (visible in the tab bar)
-   - play a short, soft beep using the browser's built-in Web Audio API
+   - play three clear beeps using the browser's built-in Web Audio API
+   - vibrate the phone (on phones that support it)
    ============================================================ */
 
 let audioContext = null;
@@ -228,21 +229,41 @@ function prepareSound() {
   }
 }
 
+const BEEP_COUNT = 3;        // how many beeps when a timer ends
+const BEEP_GAP = 0.5;        // seconds from the start of one beep to the next
+const BEEP_LENGTH = 0.4;     // seconds each beep lasts
+const BEEP_VOLUME = 0.5;     // 0 to 1 (1 = full volume)
+
 function playBeep() {
+  // Vibrate too, on phones that support it (most Android phones; not iPhone)
+  if (navigator.vibrate) {
+    navigator.vibrate([300, 150, 300, 150, 300]);
+  }
+
   if (!audioContext) {
     return;
   }
   try {
     audioContext.resume();                       // wake it up if the browser paused it
-    const oscillator = audioContext.createOscillator();  // makes the tone
-    const volume = audioContext.createGain();            // controls loudness
-    oscillator.type = "sine";                    // smooth, gentle tone
-    oscillator.frequency.value = 660;            // pitch in Hz
-    volume.gain.value = 0.15;                    // quiet (1 = full volume)
-    oscillator.connect(volume);
-    volume.connect(audioContext.destination);    // send to the speakers
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.4);  // beep for 0.4 seconds
+    const now = audioContext.currentTime;
+
+    // Play BEEP_COUNT beeps in a row, e.g. "beep - beep - beep"
+    for (let i = 0; i < BEEP_COUNT; i++) {
+      const startAt = now + i * BEEP_GAP;
+      const oscillator = audioContext.createOscillator();  // makes the tone
+      const volume = audioContext.createGain();            // controls loudness
+      oscillator.type = "sine";                  // smooth tone
+      oscillator.frequency.value = 880;          // pitch in Hz (higher = easier to notice)
+
+      // Start at BEEP_VOLUME, then fade out quickly so there is no "click" sound
+      volume.gain.setValueAtTime(BEEP_VOLUME, startAt);
+      volume.gain.exponentialRampToValueAtTime(0.001, startAt + BEEP_LENGTH);
+
+      oscillator.connect(volume);
+      volume.connect(audioContext.destination);  // send to the speakers
+      oscillator.start(startAt);
+      oscillator.stop(startAt + BEEP_LENGTH);
+    }
   } catch (error) {
     // Ignore sound errors: the title change still works
   }
